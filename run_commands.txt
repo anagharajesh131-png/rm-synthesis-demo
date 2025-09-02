@@ -1,5 +1,0 @@
-1.to generate a synthetic data
-python make_synthetic_data.py
-
-2.To run Rm synthesis1D on the generated synthetic data
-python do_RMsynth_1D.py data\synthetic_data.txt -S
