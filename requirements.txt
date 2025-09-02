@@ -1,4 +1,5 @@
-numpy
-scipy
-matplotlib
-astropy
+Python 3
+
+RM-Tools installed (official package)
+
+catalogue.csv (example source catalogue, provided in cats/)
