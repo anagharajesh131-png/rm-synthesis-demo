@@ -1,26 +1,58 @@
-import numpy as np
+"""
+rmsynthesis_pipeline.py
 
-# Frequency range: 700 MHz to 1800 MHz, step 10 MHz
-freqs = np.arange(700e6, 1800e6 + 1, 10e6)
+This script demonstrates how to:
+1. Generate test data using the catalogue file
+2. Perform RM-synthesis
+3. Apply RM-CLEAN
+for all 8 synthetic sources created from mk_test_ascii_data.py.
 
-# Assume Stokes I = 1 Jy constant
-I = np.ones_like(freqs)
+Requirements:
+- RM-Tools installed
+- Catalogue file: cats/catalogue.csv
+"""
 
-# Create synthetic polarized signal with a rotation measure (RM)
-RM = 50.0  # rad/m^2
-lambda2 = (3e8 / freqs) ** 2
-chi = RM * lambda2  # polarization angle
+import os
+import subprocess
 
-Q = np.cos(2 * chi) * 0.1  # 10% fractional polarization
-U = np.sin(2 * chi) * 0.1
+# ------------------------------
+# Step 1: Generate synthetic test data
+# ------------------------------
+print(">>> Generating synthetic test data...")
 
-# Assume small constant errors
-errI = np.full_like(freqs, 0.01)
-errQ = np.full_like(freqs, 0.01)
-errU = np.full_like(freqs, 0.01)
+subprocess.run([
+    "python", "mk_test_ascii_data.py",
+    "cats/catalogue.csv",
+    "-c", "1024",
+    "-n", "0.01"
+])
 
-# Save to file (7 columns: freq, I, Q, U, errI, errQ, errU)
-data = np.column_stack([freqs, I, Q, U, errI, errQ, errU])
-np.savetxt("C:/Users/anagha rajesh/Desktop/RMtoolsTest/synthetic_data.txt", data, fmt="%.6e")
+print(">>> Test data created in 'data/' folder.")
 
-print("Synthetic data file created: synthetic_data.txt")
+# ------------------------------
+# Step 2: Run RM-synthesis + RM-CLEAN for all 8 sources
+# ------------------------------
+print(">>> Running RM-synthesis and RM-CLEAN...")
+
+for i in range(1, 9):
+    source_file = f"data/Source{i}.dat"
+
+    print(f"\n--- Processing {source_file} ---")
+
+    # RM-synthesis
+    subprocess.run([
+        "python", "do_RMsynth_1D.py",
+        source_file,
+        "-S"
+    ])
+
+    # RM-CLEAN
+    subprocess.run([
+        "python", "do_RMCLEAN_1D.py",
+        source_file,
+        "-p"
+    ])
+
+print("\n>>> All sources processed successfully!")
+print("Check the output plots and cleaned Faraday spectra in your working directory.")
+
